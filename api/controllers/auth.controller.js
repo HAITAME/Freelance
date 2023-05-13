@@ -1,33 +1,55 @@
-
-import User from '../models/user.model.js';
+import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import createError from "../utils/createError.js";
 
-export const register = async (req, res)=>{
+export const register= async (req,res,next)=>{
+
     try{
-        const hash = bcrypt.hashSync(req.body.password,10);
-        const newUser = new User({
-            ...req.body,
-            password: hash,
-        });
+      const hash=bcrypt.hashSync(req.body.password);
+  const newUser = new User({
+    ...req.body,
+    password :hash,
+  });
 
-        await newUser.save();
-        res.status(201).send("user has been creates");
-    } catch (err){
-        res.status(500).send("something went wrong");
-    }
+  await newUser.save();
+  res.status(201).send("a new user has been created");
 
+      }catch(err){
+      res.status(500).send("Something went wrong");
+      console.log(err);
 }
-export const login = async (req, res)=>{
-        try{
-            const user =await User.findOne({username : req.body.username});
-            if( !user)  return res.status(404).send("user not found !"); 
-            const match = bcrypt.compareSync(req.body.password, user.password);
-            if(!match) return res.status(400).send("wrong password or username!");
-            const {password, ...info}=user._doc
-            res.status(200).send(info)
-        }catch{ }
-    
 }
-export const logout = async (req, resp)=>{
-        
-}
+
+
+export const login= async (req,res,next)=>{
+  try{
+    const user= await User.findOne({username:req.body.username});
+ 
+   
+   if (!user) return next(createError(404,"User not found"));
+   
+    const isCorrect=(req.body.password===user.password);
+   if(!isCorrect) return 
+     next(createError(400,"Wrong password or username"));
+   
+    const token= jwt.sign({
+      id: user._id,
+      isSeller :user.isSeller
+    },process.env.JWT_KEY);
+
+    const {password, ...info} =user._doc;
+    res.cookie("accessToken",token, {http0nly:true,}).status(200).send(info);
+  }catch(err){
+    next(createError(500,"Something went wrong"));
+     console.log(err);
+}};
+
+
+export const logout=async (req,res)=>{
+  res.clearCookie("accessToken",{
+    sameSite:"none",
+    secure:true,
+  }).status(200).send("a user has been logged out .")
+  
+};
