@@ -7,11 +7,16 @@ const [password,setPassword]=useState("");
 const [error,setError]=useState(null);
 
 const handleSubmit=async (e)=>{
-  try{
   e.prevent.default()
-const res=await axios.post("localhost:8800/api/auth/login",{ussername,password});
-}}
 
+  try{
+const res=await axios.post("https://localhost:8800/api/auth/login",{ussername,password});
+console.log(res.data);
+}catch(err){
+setError(err);
+console.log(err);
+}
+}
 // onChange={e=>setUsername(e.target.value)}
   return (
     <div className='login'>Login</div>
