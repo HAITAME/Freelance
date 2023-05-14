@@ -6,7 +6,7 @@ import createError from "../utils/createError.js";
 export const register= async (req,res,next)=>{
 
     try{
-      const hash=bcrypt.hashSync(req.body.password);
+      const hash=bcrypt.hashSync(req.body.password,10);
   const newUser = new User({
     ...req.body,
     password :hash,
@@ -16,7 +16,7 @@ export const register= async (req,res,next)=>{
   res.status(201).send("a new user has been created");
 
       }catch(err){
-      res.status(500).send("Something went wrong");
+      next(err);
       console.log(err);
 }
 }
@@ -29,9 +29,9 @@ export const login= async (req,res,next)=>{
    
    if (!user) return next(createError(404,"User not found"));
    
-    const isCorrect=(req.body.password===user.password);
-   if(!isCorrect) return 
-     next(createError(400,"Wrong password or username"));
+    const isCorrect=bcrypt.compareSync(req.body.password,user.password);
+
+   if(!isCorrect) return next(createError(400,"Wrong password or username"));
    
     const token= jwt.sign({
       id: user._id,
@@ -50,6 +50,6 @@ export const logout=async (req,res)=>{
   res.clearCookie("accessToken",{
     sameSite:"none",
     secure:true,
-  }).status(200).send("a user has been logged out .")
+  }).status(200).send("a user has been logged out .");
   
 };
