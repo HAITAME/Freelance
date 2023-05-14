@@ -8,6 +8,8 @@ import dot from './Navbar.scss'
 import container from './Navbar.scss'
 import { Link } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+// import { navigate } from "react-router-dom";
 
 const Navbar = () => {
   const [active,setActive] = useState(false)
@@ -29,9 +31,15 @@ const Navbar = () => {
   //   isSeller:true
   // }
   const currentUser=JSON.parse(localStorage.getItem("current User"));
- const handleLogout=async ()=>{
+ 
+  const navigate=useNavigate();
+
+  const handleLogout=async ()=>{
   try{
+
 await newRequest.post("/auth/logout");
+localStorage.getItem("current User",null);
+navigate("/");
 
   }catch(err){
    console.log(err);
