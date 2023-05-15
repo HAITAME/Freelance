@@ -8,6 +8,8 @@ import dot from './Navbar.scss'
 import container from './Navbar.scss'
 import { Link } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+// import { navigate } from "react-router-dom";
 
 const Navbar = () => {
   const [active,setActive] = useState(false)
@@ -23,11 +25,27 @@ const Navbar = () => {
       window.removeEventListener('scroll', isActive )
     }
   },[]);
-  const currenUser={
-    id:1,
-    username:"Haitame",
-    isSeller:true
+  // const currentUser={
+  //   id:1,
+  //   username:"Haitame",
+  //   isSeller:true
+  // }
+  const currentUser=JSON.parse(localStorage.getItem("current User"));
+ 
+  const navigate=useNavigate();
+
+  const handleLogout=async ()=>{
+  try{
+
+await newRequest.post("/auth/logout");
+localStorage.getItem("current User",null);
+navigate("/");
+
+  }catch(err){
+   console.log(err);
   }
+ }
+
 
   return (
     // Si path != home page => active sinon not active
@@ -41,15 +59,18 @@ const Navbar = () => {
             </div>
             <div className="links">
                 <span>Explore</span>
-                {!currenUser &&<span>Sign in</span>}
-                {!currenUser?.isSeller &&<span>Become a Seller</span>}
-                {!currenUser &&<button>Sign up</button>}
-                {currenUser &&(
+                {!currentUser &&<span>Sign in</span>}
+                {!currentUser?.isSeller &&<span>Become a Seller</span>}
+                {!currentUser &&<button>Sign up</button>}
+                {currentUser &&(
                    <div className="user" onClick={()=>setOpen(!open)}>
-                       <img src="src/public/img/ICON.jpg" alt="" />
-                       <span>{currenUser?.username }</span>
+                       <img 
+                       src={ currentUser.img   || "src/public/img/ICON.jpg"} 
+                       alt="" 
+                       />
+                       <span>{currentUser?.username }</span>
                        {open &&<div className="options">
-                        { currenUser?.isSeller &&(
+                        { currentUser?.isSeller &&(
                             <>
                             <Link className='link' to="/mygigs"> Gigs</Link>
                             <Link className='link' to="add">Add New Gig</Link>
@@ -57,7 +78,10 @@ const Navbar = () => {
                           )}
                         <Link className='link' to="/orders">Orders</Link>
                         <Link className='link' to="messages">Messages</Link>
-                        <Link className='link' to="/">LogOut</Link>
+                        {/* <Link className='link' onClick={handleLogout} to="/"> */}
+                        <Link className='link' to="/">
+                          LogOut
+                          </Link>
 
                       </div>}
                    </div>
